@@ -3,6 +3,7 @@ const express = require('express');
 const server = express();
 
 server.use(express.json());
+server.use(cors());
 
 let users = [
     {
@@ -71,12 +72,29 @@ server.post('/api/users', (req, res) => {
 server.delete('/api/users/:id', (req, res) => {
     const id = Number(req.params.id);
 
-    const users = users
+    const users = users.filter(user => user.id !== id); 
+
+    res.status(204);
 })
 
 // PUT Update the user by id
 server.put('/api/users/:id', (req, res) => {
+    const changes = req.body;
+    const id = Number(req.params.id);
 
+    const user = users.filter(user => user.id === id);
+
+    if (changes.name === '' || changes.bio === '') {
+        res.status(400).json({ errorMessage: "Bad request, BAD!" })
+    } 
+    if (!user) {
+        res.status(404).json({ errorMessage: "Hello? Anybody home?" })
+    }
+    if (user) {
+        res.status(200).json(changes)
+    } else {
+        res.status(500).json({ errorMessage: "Whuuuuu?! There's nothing here!" })
+    }
 })
 
 const port = 8000;
