@@ -2,8 +2,10 @@ const express = require('express');
 
 const server = express();
 
+const shortid = require('shortid'); 
+
 server.use(express.json());
-server.use(cors());
+// server.use(cors());
 
 let users = [
     {
@@ -42,9 +44,10 @@ server.get('/api/users', (req, res) => {
 server.get('/api/users/:id', (req, res) => {
     const id = Number(req.params.id); 
 
-    const user = users.filter(user => user.id === id);
+    const user = users.find(user => user.id === id);
+
     if(user){
-        res.status(200).json({ data:users.id })
+        res.status(200).json({ data:user })
     } if(!user) {
         res.status(404).json({ errorMessage: "User not found." })
     } else { 
@@ -60,7 +63,7 @@ server.post('/api/users', (req, res) => {
     
     if(newUser.name === '' || newUser.bio === ''){
         res.status(400).json({ errorMessage: "Bad request, BAD!" })
-    } if(newUser){
+    } if(newUser) {
         res.status(201).json({ message: newUser });
         users.push(newUser)
     } else {
@@ -72,9 +75,9 @@ server.post('/api/users', (req, res) => {
 server.delete('/api/users/:id', (req, res) => {
     const id = Number(req.params.id);
 
-    const users = users.filter(user => user.id !== id); 
+    users = users.filter(user => user.id !== id); 
 
-    res.status(204);
+    res.status(204).json({ users });
 })
 
 // PUT Update the user by id
@@ -82,7 +85,7 @@ server.put('/api/users/:id', (req, res) => {
     const changes = req.body;
     const id = Number(req.params.id);
 
-    const user = users.filter(user => user.id === id);
+    const user = users.find(user => user.id === id);
 
     if (changes.name === '' || changes.bio === '') {
         res.status(400).json({ errorMessage: "Bad request, BAD!" })
@@ -91,7 +94,9 @@ server.put('/api/users/:id', (req, res) => {
         res.status(404).json({ errorMessage: "Hello? Anybody home?" })
     }
     if (user) {
-        res.status(200).json(changes)
+        Object.assign(user, changes);
+        res.status(200).json(user); 
+        
     } else {
         res.status(500).json({ errorMessage: "Whuuuuu?! There's nothing here!" })
     }
